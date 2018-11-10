@@ -1,0 +1,396 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>COMP5048 Assignment 3</title>
+		<style>
+	.node circle {
+	  fill: #fff;
+	  
+	}
+	.node text { font: 12px sans-serif; }
+	.link {
+	  fill: none;
+	   
+	   
+	}
+	
+    </style>
+	</head>
+	<body>
+		
+    
+		</div><script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+		<script src="https://d3js.org/d3.v3.min.js"></script>
+		<!--script language="javascript" type="text/javascript" src="util.js"></script-->
+		<script language="javascript" type="text/javascript" src="main4.js"></script>
+		<script language="javascript" type="text/javascript" src="colorbrewer.min.js"></script>
+		<script language="javascript" type="text/javascript" >
+			
+			d3.csv("Assignment 3 Data - Moble Device Data complete.csv", function(data){ 
+				data.forEach(function(d) {
+					d["Release Year"] = +d["Release Year"];
+					d["Model ID"] = +d["Model ID"];
+					d["RAM Capacity (Mb)"] = +d["RAM Capacity (Mb)"];
+					d["Storage (Mb)"] = +d["Storage (Mb)"];
+					d["CPU Clock (MHz)"] = +d["CPU Clock (MHz)"];
+					d["Display Diagonal (in)"] = +d["Display Diagonal (in)"];
+					d["Display Width(px)"] = +d["Display Width(px)"];
+					d["Display Length(px)"] = +d["Display Length(px)"];
+					d["Width (mm)"] = +d["Width (mm)"];
+					d["Length (mm)"] = +d["Length (mm)"];
+					d["Depth (mm)"] = +d["Depth (mm)"];
+					d["Volume (cubic cm)"] = +d["Volume (cubic cm)"];
+					d["Mass (grams)"] = +d["Mass (grams)"];
+					d["Pixel Density (per inch)"] = +d["Pixel Density (per inch)"];
+				});	
+				console.log(data[0]);
+				console.log(data.length);
+
+				//##################################
+				//############Task 1################
+				//##################################
+				// Split data to tablet and mobile
+
+				var tablets = data.filter(function(d) { if (d["Length (mm)"] > 0.5 || d["Width (mm)"] > 0.35 || d["Mass (grams)"] > 0.09) {return d;}});
+				console.log("No of tablets", tablets.length);
+				var phones = data.filter(function(d) { if (d["Length (mm)"] <= 0.5 && d["Width (mm)"] <= 0.35 && d["Mass (grams)"] <=  0.09) {return d;}});
+				console.log("No of phones", phones.length);
+
+				// *******Tablets*********
+				// Feature tablets
+				var tabletsFeature = tablets.filter(function(d) { if (d["Pixel Density (per inch)"] < 0.5 && d["CPU Clock (MHz)"] < 0.45) {return d;}});
+				console.log("Feature tablets", tabletsFeature.length);
+				
+				// High performance tablets
+				var tabletsHighPerf = tablets.filter(function(d) { if (d["Pixel Density (per inch)"] >= 0.5 || d["CPU Clock (MHz)"] >= 0.45) {return d;}});
+				console.log("High performance tablets", tabletsHighPerf.length);
+				
+				//******Phones***********
+				// Split phones into High-end and regular
+				var phonesRegular = phones.filter(function(d) { if (d["Display Length(px)"] <= 2 * d["Display Width(px)"] || d["CPU Clock (MHz)"] <= 0.4 && d["Storage (Mb)"] <= 0.4) {return d;}});
+				console.log("Regular phones", phonesRegular.length);
+
+				var phonesHighend = phones.filter(function(d) { if (d["Display Length(px)"] > 2 * d["Display Width(px)"] && d["CPU Clock (MHz)"] > 0.4 || d["Storage (Mb)"] > 0.4) {return d;}});
+				console.log("High-end phones", phonesHighend.length);
+				// -------High-end phones-------
+				// High performance Phone
+				var phonesHighPerf = phonesHighend.filter(function(d) { if (d["RAM Capacity (Mb)"] >0.4 && d["Pixel Density (per inch)"] > 0.5) {return d;}});
+				console.log("High performance phones", phonesHighPerf.length);
+				// Wide screen phone
+				var phonesWidescreen = phonesHighend.filter(function(d) { if (d["RAM Capacity (Mb)"] <= 0.4 || d["Pixel Density (per inch)"] <= 0.5) {return d;}});
+				console.log("Wide screen phones", phonesWidescreen.length);
+				
+				// -----Regular phones--------
+				// Feature phone
+				var phonesFeature = phonesRegular.filter(function(d) { if (d["RAM Capacity (Mb)"] < 0.09 || d["CPU Clock (MHz)"]  < 0.2 || d["Pixel Density (per inch)"] < 0.2) {return d;}});
+				console.log("Feature phones", phonesFeature.length);
+				
+				// Mid-range phone
+				var phonesMidrange = phonesRegular.filter(function(d) { if (d["RAM Capacity (Mb)"] >= 0.09 && d["CPU Clock (MHz)"]  >= 0.2 && d["Pixel Density (per inch)"] >= 0.2) {return d;}});
+				console.log("Mid-size phones", phonesMidrange.length);
+				
+				// Mid-size phone
+				var phonesMidsize = phonesMidrange.filter(function(d) { return d["Pixel Density (per inch)"] > 0.4;});
+				console.log("Mid-size phones", phonesMidsize.length);
+				
+				// Mid performance Phone
+				var phonesMidPerf = phonesMidrange.filter(function(d) { return d["Pixel Density (per inch)"] <= 0.4;});
+				console.log("Mid performance phones", phonesMidPerf.length);
+				
+				// Generate JSON data
+				
+				var treeData = [
+				{
+				  "name": "Mobile Devices",
+				  "cluster": 11,
+				  //"total": tablets.length + phones.length,
+					"total": 1362+170+556+269+106+320+120,
+				  "condition":"Clusters: 1,2,3,4,5,6,7", 
+				  "parent": "null",
+				  "children": [
+				    {
+				    	"name": "Tablets", 
+				    	"cluster": 12,
+				    	"parent": "Mobile Devices",
+				    	"answer": "Yes",
+				    	"condition":"Clusters: 2,5 (2 larger size)", 
+				    	//"total": tablets.length,
+						"total":170+106,
+				    	
+				    "children": [
+				      {
+				        "name": "PDAs and Early-stage", 
+				        "cluster": 3,
+				        "parent": "Tablets",
+				        "condition":"Cluster 2 (lower CPU)",
+				        //"total": tabletsFeature.length
+						  "total":170
+				      },
+				        
+				      {
+				        "name": "High performance", 
+				        "cluster": 4,
+				        "parent": "Tablets",
+				        "condition": "Cluster 5 (higher CPU)",
+				        //"total": tabletsHighPerf.length
+						"total":106
+				      }
+				    ]},
+
+				    {
+				      "name": "Smartphones", 
+				      "cluster": 13,
+				      "parent": "Mobile Devices",
+				      "answer": "No",
+				      "condition":"Clusters: 1,3,4,6,7(smaller size)", 
+				      //"total": phones.length,
+					  "total":1362+556+269+320+120,
+				      "children": [
+				      
+				        {
+				          "name": "Feature/ Early-stage", 
+				          "cluster": 0,
+				          "parent": "Smartphones",
+				          "condition": "Cluster 1 (lowest CPU)",
+				          //"total": phonesFeature.length
+					  		"total": 1362
+				        }, 
+				        {
+				          "name": "Mid-range", 
+				          "cluster": 16,
+				          "parent": "Smartphones",
+				          "condition": "Clusters: 3,4",
+				          //"total": phonesMidrange.length,
+					  	   "total":556+269+120,
+				          "children": [
+				          {
+				            "name": "Mid-size", 
+				            "cluster": 1,
+				            "parent": "Mid-range",
+				          	"condition": "Cluster 3 (lower CPU)",
+				          	//"total":phonesMidsize.length
+					  		"total":556
+				          },
+				        
+				          {
+				            "name": "Mid performance",
+				            "cluster": 6,
+				            "parent": "Mid-range",
+				          	"condition": "Cluster 4 (higher CPU)",
+				          	//"total":phonesMidPerf.length
+					  		"total":269
+				            
+				          },
+					  	
+				        ]}, 
+				        {
+				          "name": "Widescreen", 
+				          "cluster": 2,
+				          "parent": "Others",
+				          "condition": "Cluster 7 (higher CPU and larger)",
+				          //"total": phonesWidescreen.length
+					  	  "total":120
+				          
+				        } ,
+				        {
+				          "name": "High performance", 
+				          "cluster": 5,
+				          "parent": "Smartphones",
+				          "condition": "Cluster 6 (highest CPU)",
+				          //"total": phonesHighPerf.length
+							"total":320
+				        }       
+				        ]}
+				      ]}
+				              
+				      
+				    ];
+				var radiusScale = d3.scale.linear().domain([100, 2903]).range([10,30]);
+				var pathScale = d3.scale.linear().domain([100, 2903]).range([5,15]);
+				var colorScale = d3.scale.quantize().domain([0, 7]).range(colorbrewer.Set3[11]);
+				var colorScale2 = d3.scale.linear().domain([11, 16]).range(colorbrewer.BuPu[6]);
+				// ============= Visualisation Task 1 ================
+				// ************** Generate the tree diagram	 *****************
+				//References:
+				//http://www.d3noob.org/2014/01/tree-diagrams-in-d3js_11.html
+				//https://leanpub.com/D3-Tips-and-Tricks/read
+				//http://vizuly.io/product/weighted-tree/
+				//************************************************************
+var margin = {top: 20, right: 120, bottom: 20, left: 120},
+	width = 960 - margin.right - margin.left,
+	height = 500 - margin.top - margin.bottom;
+	
+var i = 0,
+	duration = 750,
+	root;
+
+var tree = d3.layout.tree()
+	.size([height, width]);
+
+var diagonal = d3.svg.diagonal()
+	.projection(function(d) { return [d.y, d.x]; });
+
+var svg = d3.select("body").append("svg")
+	.attr("width", width + margin.right + margin.left)
+	.attr("height", height + margin.top + margin.bottom)
+  .append("g")
+	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+root = treeData[0];
+root.x0 = height / 2;
+root.y0 = 0;
+  
+update(root);
+
+d3.select(self.frameElement).style("height", "500px");
+
+function update(source) {
+
+  // Compute the new tree layout.
+  var nodes = tree.nodes(root).reverse(),
+	  links = tree.links(nodes);
+
+  // Normalize for fixed-depth.
+  nodes.forEach(function(d) { d.y = d.depth * 180; });
+
+  // Update the nodes…
+  var node = svg.selectAll("g.node")
+	  .data(nodes, function(d) { return d.id || (d.id = ++i); });
+
+  // Enter any new nodes at the parent's previous position.
+  var nodeEnter = node.enter().append("g")
+	  .attr("class", "node")
+	  .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
+	  .on("click", click)
+	  .on("mouseover", function(d) { 
+	  		var g = d3.select(this);
+	  		/*var info1 = g.append('text')
+	  			.classed('info1', true)
+	  			.attr("x", function(d) { 
+	  				return d.children || d._children ? -1 * (radiusScale(d.total) +30) : (radiusScale(d.total) + 4); })
+	  			.attr('y', -10)
+	  			.text(d.total)
+	  			.transition().style("font-weight","bold").style("font-size","16px");*/
+	  		var info2 = g.append('text')
+	  			.classed('info2', true)
+	  			.attr("x", function(d) { 
+	  				return d.children || d._children ? -1 * (radiusScale(d.total) +4) : (radiusScale(d.total) + 4); })
+	  			.attr('y', 20)
+	  			.style('text-anchor', function(d) {
+	  				return d.children || d._children ? "middle": "left";})
+	  			.text(d.condition)
+			.transition().style("font-weight","bold").style("font-size","14px");
+	  		/*var info3 = g.append('text')
+	  			.classed('info3', true)
+	  			.attr("x", function(d) { 
+	  				return d.children || d._children ? -1 * (radiusScale(d.total) +4) : (radiusScale(d.total) + 4); })
+	  			.attr("dy", ".35em")
+	  			.style('text-anchor', function(d) {
+	  				return d.children || d._children ? "middle": "left";})
+	  			.text(d.name)
+	  			.transition().style("font-weight","bold").style("font-size","16px");*/
+	  		
+	  		
+	  	})
+	  .on("mouseout", function(d) { 
+	  		//d3.select(this).select('text.info1').remove();
+	  		d3.select(this).select('text.info2').remove();
+	  		//d3.select(this).select('text.info3').remove();
+	  			
+	  	});
+   nodeEnter.append("circle")
+	  .attr("r", function(d) { return radiusScale(d.total)})
+	  .style("fill", function(d) { return d._children ?  colorScale2(d.cluster): colorScale(d.cluster); });
+	  //.style("fill", function(d) { return colorScale2(d.cluster); });
+
+  nodeEnter.append("text")
+	  .attr("x", function(d) { 
+	  	return d.children || d._children ? -1 * (radiusScale(d.total) + 4) : (radiusScale(d.total) + 4); })
+	  .attr("dy", ".35em")
+	  .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+	  .text(function(d) { return d.name; })
+	  .style("fill-opacity", 1e-6);
+
+  // Transition nodes to their new position.
+  var nodeUpdate = node.transition()
+	  .duration(duration)
+	  .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
+
+  nodeUpdate.select("circle")
+	  .attr("r", function(d) { return radiusScale(d.total)})
+	  //.style("stroke", function(d) { return d._children ? colorScale2(d.cluster) : colorScale(d.cluster)})
+	  .style("stroke", function(d) { return colorScale(d.cluster)})
+	  .style("stroke-width", function(d) { return 5})
+	  .style("fill", function(d) { return d._children ? "#fff" : colorScale(d.cluster); });
+	  //.style("fill", function(d) { return colorScale(d.total); });
+	  
+  nodeUpdate.select("text")
+	  .style("fill-opacity", 1);
+
+  // Transition exiting nodes to the parent's new position.
+  var nodeExit = node.exit().transition()
+	  .duration(duration)
+	  .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
+	  .remove();
+
+  nodeExit.select("circle")
+	  .attr("r", function(d) { return radiusScale(d.total)});
+
+  nodeExit.select("text")
+	  .style("fill-opacity", 1e-6);
+
+  // Update the links…
+  var link = svg.selectAll("path.link")
+	  .data(links, function(d) { return d.target.id; });
+
+  // Enter any new links at the parent's previous position.
+  link.enter().insert("path", "g")
+	  .attr("class", "link")
+	  .attr("d", function(d) {
+		var o = {x: source.x0, y: source.y0};
+		return diagonal({source: o, target: o});
+	  })
+	  .attr("stroke", function(d) { return colorScale2(d.source.cluster)})
+	  .attr("stroke-width", function(d) {return pathScale(d.target.total);});
+
+
+  // Transition links to their new position.
+  link.transition()
+	  .duration(duration)
+	  .attr("d", diagonal);
+
+  // Transition exiting nodes to the parent's new position.
+  link.exit().transition()
+	  .duration(duration)
+	  .attr("d", function(d) {
+		var o = {x: source.x, y: source.y};
+		return diagonal({source: o, target: o});
+	  })
+	  .remove();
+
+  // Stash the old positions for transition.
+  nodes.forEach(function(d) {
+	d.x0 = d.x;
+	d.y0 = d.y;
+  });
+}
+
+// Toggle children on click.
+function click(d) {
+  if (d.children) {
+	d._children = d.children;
+	d.children = null;
+  } else {
+	d.children = d._children;
+	d._children = null;
+  }
+  update(d);
+}
+
+
+
+});
+</script>
+	</body>
+</html>
